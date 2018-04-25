@@ -1,67 +1,44 @@
 class Game
-  attr_accessor :hand1, :hand2, :last_hand, :result, :hand, :step, :layer
-  def initialize(hand1, hand2, last_hand, step=nil, layer=0)
+  attr_accessor :hand1, :hand2, :last_hand, :result, :hand, :layer
+  def initialize(hand1, hand2, last_hand, layer=0)
     @@calculated ||= Game.load_calculated
     @@calculated_length ||= Game.load_calculated.length
     @hand1 = hand1
     @hand2 = hand2
     @last_hand = last_hand
-    @step = step
     @layer = layer
-    if @layer < 2
-      puts 'step:'
-      puts @step
-      puts 'layer:'
-      puts @layer
-      puts 'last hand:'
-      puts @last_hand
-      puts 'hand1:'
-      puts @hand1
-      puts ''
-      puts 'hand2:'
-      puts @hand2
-      puts ''
-      puts 'calculated:'
-      puts @@calculated.length
-      puts ''
-    end
+    @i = 0
+    log_game
   end
 
   def judge
-    @result = false
-    i = 0
-    legals = legal_hands#.shuffle
-    legals.each do |hand|
-      i = i+1
-      @step = "#{i} / #{legal_hands.length}"
-      left_hand = get_left_hand(hand)
-      if left_hand.length == 0
-        @result = true
-        @hand = hand
-      else
-        g = Game.new(@hand2, left_hand, hand, @step, @layer + 1)
-        if !@@calculated[g.to_s].nil?
-          g.result = @@calculated[g.to_s]
-        else
-          g.judge
-          @@calculated[g.to_s] = g.result
-        end
-        @result = !g.result
+    if !@@calculated[to_s].nil?
+      @result = @@calculated[to_s]
+    else
+      @result = false
+      legals = legal_hands#.shuffle
+      legals.each do |hand|
+        judge_next_hand(hand)
+        break if @result
       end
-      if @result
-        @hand = hand
-        break
-      end
+      @@calculated[to_s] = @result
     end
     return @result
   end
 
-  def get_left_hand(hand)
-    if @hand1.to_a != hand.to_a
-      return PokerHand.new(@hand1.to_a - hand.to_a)
+  def judge_next_hand(hand)
+    @i = @i+1
+    puts @step = "#{@i} / #{legal_hands.length}" if layer < 1
+    if hand1.length == hand.length
+      @result = true
     else
-      return PokerHand.new
+      left_hand = PokerHand.new(@hand1 - hand)
+      g = Game.new(@hand2, left_hand, hand, @layer + 1)
+      g.judge
+      @result = !g.result
     end
+    @hand = hand if @result
+    @result
   end
 
   def legal_hands
@@ -123,6 +100,24 @@ class Game
 
   def to_s
     "#{@hand1.to_s} #{@hand2.to_s} #{@last_hand.to_s}"
+  end
+
+  def log_game
+    if @layer < 2
+      puts 'layer:'
+      puts @layer
+      puts 'last hand:'
+      puts @last_hand
+      puts 'hand1:'
+      puts @hand1
+      puts ''
+      puts 'hand2:'
+      puts @hand2
+      puts ''
+      puts 'calculated:'
+      puts @@calculated.length
+      puts ''
+    end
   end
 
   def self.calculated
