@@ -1,29 +1,16 @@
 class PokerHand
   def pairs
-    cards = to_a
-    faces = cards.map{|card| card.face}
-    if faces.length == faces.uniq.length
-      []
-    else
-      duplicates = cards.group_by{ |card| card.face }.select { |k, v| v.size > 1 }
-    end
+    return to_a.combination(2).select{|hand| hand[0].face == hand[1].face}.map{|hand| PokerHand.new(hand)}
   end
   
   def threes
-    cards = to_a
-    faces = cards.map{|card| card.face}
-    if faces.length == faces.uniq.length
-      []
-    else
-      duplicates = cards.group_by{ |card| card.face }.select { |k, v| v.size > 2 }
-    end
+    return to_a.combination(3).select{|hand| hand[0].face == hand[1].face && hand[0].face == hand[2].face}.map{|hand| PokerHand.new(hand)}
   end
 
   def fives
     dee_ranks = ['Royal Flush', 'Straight Flush', 'Four of a kind', 'Full house', 'Flush', 'Straight']
     result = []
-    cards = to_a
-    five_array = cards.combination(5)
+    five_array = to_a.combination(5)
     five_array.each do |five|
       ph = PokerHand.new(five)
       if dee_ranks.include?(ph.rank)
@@ -67,10 +54,8 @@ class PokerHand
     if !straight? && !hand.straight?
       bigger hand
     else
-      if flush? && !hand.flush?
-        true
-      elsif !flush? && hand.flush?
-        false
+      if flush? != hand.flush?
+        return flush?
       else
         max > hand.max
       end

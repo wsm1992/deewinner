@@ -1,15 +1,16 @@
 class Game
-  attr_accessor :hand1, :hand2, :last_hand, :result, :hand, :round, :layer
-  @@calculated = YAML.load_file('calculated.yml')
-  def initialize(hand1, hand2, last_hand, round=nil, layer=0)
+  attr_accessor :hand1, :hand2, :last_hand, :result, :hand, :step, :layer
+  def initialize(hand1, hand2, last_hand, step=nil, layer=0)
+    @@calculated ||= Game.load_calculated
+    @@calculated_length ||= Game.load_calculated.length
     @hand1 = hand1
     @hand2 = hand2
     @last_hand = last_hand
-    @round = round
+    @step = step
     @layer = layer
     if @layer < 2
-      puts 'round:'
-      puts @round
+      puts 'step:'
+      puts @step
       puts 'layer:'
       puts @layer
       puts 'last hand:'
@@ -29,24 +30,16 @@ class Game
   def judge
     @result = false
     i = 0
-    legals = legal_hands
+    legals = legal_hands#.shuffle
     legals.each do |hand|
       i = i+1
-      if @round
-        flag = "#{i} / #{legal_hands.length}"
-      else
-        flag = @round
-      end
-      if @hand1.to_a != hand.to_a
-        left_hand = PokerHand.new(@hand1.to_a - hand.to_a)
-      else
-        left_hand = PokerHand.new
-      end
+      @step = "#{i} / #{legal_hands.length}"
+      left_hand = get_left_hand(hand)
       if left_hand.length == 0
         @result = true
         @hand = hand
       else
-        g = Game.new(@hand2, left_hand, hand, flag, @layer + 1)
+        g = Game.new(@hand2, left_hand, hand, @step, @layer + 1)
         if !@@calculated[g.to_s].nil?
           g.result = @@calculated[g.to_s]
         else
@@ -61,6 +54,14 @@ class Game
       end
     end
     return @result
+  end
+
+  def get_left_hand(hand)
+    if @hand1.to_a != hand.to_a
+      return PokerHand.new(@hand1.to_a - hand.to_a)
+    else
+      return PokerHand.new
+    end
   end
 
   def legal_hands
@@ -84,75 +85,40 @@ class Game
   end
 
   def legal_cards
-    lh = @last_hand
     result = @hand1.to_a.map{|card| PokerHand.new([card])}
-    if lh == pass
+    if @last_hand == pass
       return result
     else
-      return result.select{|card| card > lh}
+      return result.select{|card| card > @last_hand}
     end
   end
 
   def legal_pairs
-    face = nil
-    suit = nil
-    lh = @last_hand
-    if lh == pass
-      face = 0
-      suit = 0
-    else
-      face = lh.max.face
-      suit = lh.map{|card| card.suit}.max
-    end
     result = []
-    pairs = @hand1.pairs
-    pairs.each do |k, v|
-      if k > face
-        result << PokerHand.new(v)
-      elsif k == face
-        if v.map{|card| card.suit}.max > suit
-          result << PokerHand.new(v[0..1])
-        end
-      end
+    @hand1.pairs.each do |pair|
+      result << pair if pair > @last_hand
     end
-    result
+    return result
   end
 
   def legal_threes
-    face = nil
-    lh = @last_hand
-    if lh == pass
-      face = 0
-    else
-      face = lh.max.face
-    end
     result = []
-    threes = @hand1.threes
-    threes.each do |k, v|
-      if k > face
-        result << PokerHand.new(v[0..2])
-      end
+    @hand1.threes.each do |three|
+      result << three if three > @last_hand
     end
-    result
+    return result
   end
 
   def legal_fives
     result = []
-    fives = @hand1.fives
-    fives.each do |five|
-      if five > @last_hand
-        result << five
-      end
+    @hand1.fives.each do |five|
+      result << five if five > @last_hand
     end
-    result
+    return result
   end
 
   def pass
     PokerHand.new
-  end
-
-  def ==(game)
-    @hand1 == game.hand1 && @hand2 == game.hand2 && @last_hand == game.last_hand
   end
 
   def to_s
@@ -164,6 +130,17 @@ class Game
   end
 
   def self.write_calculated
-    File.write('calculated.yml', Game.calculated.to_yaml)
+    if Game.calculated.length > @@calculated_length
+      File.write('calculated.yml', Game.calculated.to_yaml)
+    end
+  end
+
+  def self.load_calculated
+    filename = 'calculated.yml'
+    if File.file?(filename)
+      YAML.load_file(filename)
+    else
+      {}
+    end
   end
 end
