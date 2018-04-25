@@ -1,8 +1,7 @@
 class Game
   attr_accessor :hand1, :hand2, :last_hand, :result, :hand, :layer
   def initialize(hand1, hand2, last_hand, layer=0)
-    @@calculated ||= Game.load_calculated
-    @@calculated_length ||= Game.load_calculated.length
+    @calculated = Calculated.instance
     @hand1 = hand1
     @hand2 = hand2
     @last_hand = last_hand
@@ -12,8 +11,9 @@ class Game
   end
 
   def judge
-    if !@@calculated[to_s].nil?
-      @result = @@calculated[to_s]
+    cal_data = @calculated.get(to_s)
+    if !cal_data.nil?
+      @result = cal_data
     else
       @result = false
       legals = legal_hands#.shuffle
@@ -21,7 +21,7 @@ class Game
         judge_next_hand(hand)
         break if @result
       end
-      @@calculated[to_s] = @result
+      @calculated.save(to_s, @result)
     end
     return @result
   end
@@ -115,27 +115,8 @@ class Game
       puts @hand2
       puts ''
       puts 'calculated:'
-      puts @@calculated.length
+      puts @calculated.data.length
       puts ''
-    end
-  end
-
-  def self.calculated
-    @@calculated
-  end
-
-  def self.write_calculated
-    if Game.calculated.length > @@calculated_length
-      File.write('calculated.yml', Game.calculated.to_yaml)
-    end
-  end
-
-  def self.load_calculated
-    filename = 'calculated.yml'
-    if File.file?(filename)
-      YAML.load_file(filename)
-    else
-      {}
     end
   end
 end
