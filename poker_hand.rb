@@ -54,10 +54,24 @@ class PokerHand
     if !straight? && !hand.straight?
       bigger hand
     else
-      if flush? != hand.flush?
-        return flush?
+      if (flush? && !hand.flush?) || (!flush? && hand.flush?)
+        if flush?
+          true
+        else
+          false
+        end
       else
-        max > hand.max
+        if max.face != hand.max.face
+          max.face > hand.max.face
+        else
+          second_max = sort[-2]
+          hand_second_max = hand.to_a.sort[-2]
+          if second_max.face != hand_second_max.face
+            second_max.face > hand_second_max.face
+          else
+            max.suit > hand.max.suit
+          end
+        end
       end
     end
   end
