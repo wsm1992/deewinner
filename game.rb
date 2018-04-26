@@ -1,5 +1,5 @@
 class Game
-  attr_accessor :hand1, :hand2, :last_hand, :result, :hand, :layer
+  attr_accessor :result, :hand
   def initialize(hand1, hand2, last_hand, layer=0)
     @calculated = Calculated.instance
     @hand1 = hand1
@@ -13,23 +13,24 @@ class Game
   def judge
     cal_data = @calculated.get(to_s)
     if !cal_data.nil?
-      @result = cal_data
+      @result = cal_data['result']
+      @hand = cal_data['hand']
     else
       @result = false
       legals = legal_hands#.shuffle
       legals.each do |hand|
-        judge_next_hand(hand)
+        judge_this_hand(hand)
         break if @result
       end
-      @calculated.save(to_s, @result)
+      @calculated.save(to_s, @result, @hand)
     end
     return @result
   end
 
-  def judge_next_hand(hand)
+  def judge_this_hand(hand)
     @i = @i+1
-    puts @step = "#{@i} / #{legal_hands.length}" if layer < 1
-    if hand1.length == hand.length
+    puts @step = "#{@i} / #{legal_hands.length}" if @layer < 1
+    if @hand1.length == hand.length
       @result = true
     else
       left_hand = PokerHand.new(@hand1 - hand)
@@ -38,27 +39,29 @@ class Game
       @result = !g.result
     end
     @hand = hand if @result
-    @result
+    return @result
   end
 
   def legal_hands
-    amount = @last_hand.length
-    result = []
-    if amount == 1
-      result = legal_cards
-    elsif amount == 2
-      result = legal_pairs
-    elsif amount == 3
-      result = legal_threes
-    elsif amount == 5
-      result = legal_fives
-    else
-      result = legal_cards + legal_fives + legal_threes + legal_pairs
+    if @legal_hands.nil?
+      @legal_hands = []
+      amount = @last_hand.length
+      if amount == 1
+        @legal_hands = legal_cards
+      elsif amount == 2
+        @legal_hands = legal_pairs
+      elsif amount == 3
+        @legal_hands = legal_threes
+      elsif amount == 5
+        @legal_hands = legal_fives
+      else
+        @legal_hands = legal_cards + legal_fives + legal_threes + legal_pairs
+      end
+      if amount != 0
+        @legal_hands << pass
+      end
     end
-    if amount != 0
-      result << pass
-    end
-    result
+    @legal_hands 
   end
 
   def legal_cards
@@ -88,6 +91,7 @@ class Game
 
   def legal_fives
     result = []
+    return result
     @hand1.fives.each do |five|
       result << five if five > @last_hand
     end

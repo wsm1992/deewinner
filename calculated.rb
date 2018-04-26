@@ -2,31 +2,41 @@ class Calculated
   include Singleton
 
   def data
-    @data ||= load_data
+    @path = 'cal/'
+    @exist_data ||= {}
+    @data ||= {}
     @origin_length ||= @data.length
     return @data
   end
 
   def write
-    if data.length > @origin_length
-      File.write('calculated.yml', @data.to_yaml)
-    end
-  end
-
-  def load_data
-    filename = 'calculated.yml'
-    if File.file?(filename)
-      YAML.load_file(filename)
-    else
-      {}
+    Dir.mkdir(@path) unless File.exists?(@path)
+    @data.each do |k, v|
+      File.write(@path + k, v.to_yaml)
     end
   end
 
   def get(str)
-    return @data[str]
+    if @exist_data[str]
+      return @exist_data[str]
+    end
+    if @data[str]
+      return @data[str]
+    end
+    if File.file?(@path + str)
+      cal = YAML.load_file(@path + str)
+      cal['hand'] = PokerHand.new(cal['hand'])
+      @exist_data[str] = cal
+      return cal
+    else
+      return nil
+    end
   end
 
-  def save(str, result)
-    @data[str] = result
+  def save(str, result, hand)
+    cal = {}
+    cal['result'] = result
+    cal['hand'] = hand.to_a.join(' ')
+    @data[str] = cal
   end
 end
