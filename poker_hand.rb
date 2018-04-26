@@ -51,6 +51,15 @@ class PokerHand
 
   def >(hand)
     return true if hand.length == 0
+    if length == 1 && hand.length == 1
+      card = first
+      hand_card = hand.first
+      if card.face != hand_card.face
+        return card.face > hand_card.face
+      else
+        return card.suit > hand_card.suit
+      end
+    end
     if !straight? && !hand.straight?
       bigger hand
     else
@@ -74,5 +83,9 @@ class PokerHand
         end
       end
     end
+  end
+
+  def to_s
+    to_a.join('')
   end
 end

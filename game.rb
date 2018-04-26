@@ -99,7 +99,7 @@ class Game
   end
 
   def to_s
-    "#{@hand1.to_s} #{@hand2.to_s} #{@last_hand.to_s}"
+    "#{@hand1.to_s}_#{@hand2.to_s}_#{@last_hand.to_s}"
   end
 
   def log_game
