@@ -8,7 +8,10 @@ require_relative 'poker_hand'
 require_relative 'card'
 
 
-turn = ARGV[0] == 'A' ? 1 : 2
+first_player = ARGV[0]
+first_player ||= 'A'
+turn = first_player == 'A' ? 1 : 2
+
 deck1 = ARGV[turn]
 deck2 = ARGV[3 - turn]
 last_hand = ARGV[3]
@@ -34,15 +37,21 @@ hand2 = PokerHand.new(deck2)
 game = Game.new(hand1, hand2, PokerHand.new(last_hand))
 Calculated.instance.data
 
+turns = ['', 'A', 'B']
 begin
-  puts 'game name: ' + game.to_s
   game.judge
-  puts 'game name: ' + game.to_s
-  puts 'hand1 will ' + (game.result ? 'win' : 'lose')
-  puts 'first hand: ' + game.hand.to_s
+  puts 'this game: ' + game.to_s
+  puts ''
+  puts ((game.result == (turn == 1)) ? 'A' : 'B') + ' will WIN !!!!!'
 
-  puts 'calculated:'
-  puts Calculated.instance.data.length
+  if game.result
+    first_hand = game.hand.to_s
+    first_hand = 'PASS' if first_hand == ""
+    puts 'first hand: ' + first_hand
+  end
+
+  #puts 'calculated:'
+  #puts Calculated.instance.data.length
 ensure
   Calculated.instance.write
 end
