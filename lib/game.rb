@@ -43,14 +43,19 @@ class Game
   end
 
   def legal_hands
-    @legal_mapping ||= {
-      1 => legal_cards << pass,
-      2 => legal_pairs << pass,
-      3 => legal_threes << pass,
-      5 => legal_fives << pass,
-      0 => legal_cards + legal_fives + legal_threes + legal_pairs
-    }
-    @legal_hands ||= @legal_mapping[@last_hand.length]
+    amount = @last_hand.length
+    @legal_hands ||= 
+      if amount == 1
+        legal_cards << pass
+      elsif amount == 2
+        legal_pairs << pass
+      elsif amount == 3
+        legal_threes << pass
+      elsif amount == 5
+        legal_fives << pass
+      elsif amount == 0
+        legal_cards + legal_fives + legal_threes + legal_pairs
+      end
     return @legal_hands 
   end
 
@@ -97,8 +102,8 @@ class Game
 
   def log_game
     if @layer < 2
-      puts 'layer:'
-      puts @layer
+      #puts 'layer:'
+      #puts @layer
       puts 'last hand:'
       puts @last_hand
       puts 'hand1:'
@@ -107,9 +112,9 @@ class Game
       puts 'hand2:'
       puts @hand2
       puts ''
-      puts 'calculated:'
-      puts @calculated.data.length
-      puts ''
+      #puts 'calculated:'
+      #puts @calculated.data.length
+      #puts ''
     end
   end
 end
