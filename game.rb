@@ -13,8 +13,8 @@ class Game
   def judge
     cal_data = @calculated.get(to_s)
     if !cal_data.nil?
-      @result = cal_data['result']
-      @hand = cal_data['hand']
+      @result = cal_data['r']
+      @hand = cal_data['h']
     else
       @result = false
       legals = legal_hands#.shuffle
@@ -43,25 +43,15 @@ class Game
   end
 
   def legal_hands
-    if @legal_hands.nil?
-      @legal_hands = []
-      amount = @last_hand.length
-      if amount == 1
-        @legal_hands = legal_cards
-      elsif amount == 2
-        @legal_hands = legal_pairs
-      elsif amount == 3
-        @legal_hands = legal_threes
-      elsif amount == 5
-        @legal_hands = legal_fives
-      else
-        @legal_hands = legal_cards + legal_fives + legal_threes + legal_pairs
-      end
-      if amount != 0
-        @legal_hands << pass
-      end
-    end
-    @legal_hands 
+    @legal_mapping ||= {
+      1 => legal_cards << pass,
+      2 => legal_pairs << pass,
+      3 => legal_threes << pass,
+      5 => legal_fives << pass,
+      0 => legal_cards + legal_fives + legal_threes + legal_pairs
+    }
+    @legal_hands ||= @legal_mapping[@last_hand.length]
+    return @legal_hands 
   end
 
   def legal_cards
