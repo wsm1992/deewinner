@@ -2,7 +2,7 @@ class Calculated
   include Singleton
 
   def data
-    @path = 'cal/'
+    @path = 'output/'
     @exist_data ||= {}
     @data ||= {}
     @origin_length ||= @data.length
