@@ -25,7 +25,7 @@ class Calculated
     end
     if File.file?(@path + str)
       cal = YAML.load_file(@path + str)
-      cal['hand'] = PokerHand.new(cal['hand'])
+      cal['h'] = PokerHand.new(cal['h'])
       @exist_data[str] = cal
       return cal
     else
@@ -35,8 +35,8 @@ class Calculated
 
   def save(str, result, hand)
     cal = {}
-    cal['result'] = result
-    cal['hand'] = hand.to_a.join(' ')
+    cal['r'] = result
+    cal['h'] = hand.to_a.join(' ')
     @data[str] = cal
   end
 end
