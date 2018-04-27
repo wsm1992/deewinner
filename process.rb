@@ -2,10 +2,10 @@ require 'ruby-poker'
 require 'yaml'
 require 'singleton'
 require 'fileutils'
-require_relative 'calculated'
-require_relative 'game'
-require_relative 'poker_hand'
-require_relative 'card'
+require_relative 'lib/calculated'
+require_relative 'lib/game'
+require_relative 'lib/poker_hand'
+require_relative 'lib/card'
 
 
 first_player = ARGV[0]
