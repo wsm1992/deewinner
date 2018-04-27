@@ -81,7 +81,6 @@ class Game
 
   def legal_fives
     result = []
-    return result
     @hand1.fives.each do |five|
       result << five if five > @last_hand
     end
